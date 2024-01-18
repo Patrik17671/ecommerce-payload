@@ -51,6 +51,36 @@ export const Products: CollectionConfig = {
 				position: 'sidebar',
 			},
 		},
+		{
+			name: 'price',
+			label: 'Price',
+			type: 'text',
+			required: true
+		},
+		{
+			name: 'sizes',
+			label: 'Sizes',
+			type: 'array',
+			fields: [
+				{
+					type: 'text',
+					name: 'size',
+					label: 'Size'
+				}
+			],
+		},
+		{
+			name: 'colors',
+			label: 'Colors',
+			type: 'array',
+			fields: [
+				{
+					type: 'text',
+					name: 'color',
+					label: 'Color'
+				}
+			],
+		},
 	],
 };
 export default Products;
