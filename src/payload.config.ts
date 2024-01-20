@@ -12,6 +12,7 @@ import Categories from "./collections/Categories";
 import Products from "./collections/Products";
 import Header from "./globals/Header";
 import MediaCategories from "./collections/MediaCategories";
+import Carts from "./collections/Carts";
 
 export default buildConfig({
   admin: {
@@ -19,7 +20,7 @@ export default buildConfig({
     bundler: webpackBundler(),
   },
   editor: slateEditor({}),
-  collections: [Users,MediaBanners,Banners,Categories,MediaProducts,Products,MediaCategories],
+  collections: [Users,MediaBanners,Banners,Categories,MediaProducts,Products,MediaCategories,Carts],
 	globals: [Header],
   typescript: {
     outputFile: path.resolve(__dirname, 'payload-types.ts'),
