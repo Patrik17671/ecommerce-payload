@@ -13,11 +13,28 @@ import Products from "./collections/Products";
 import Header from "./globals/Header";
 import MediaCategories from "./collections/MediaCategories";
 import Carts from "./collections/Carts";
+import dotenv from 'dotenv'
+
+dotenv.config({
+	path: path.resolve(__dirname, '../../.env'),
+})
+const mockModulePath = path.resolve(__dirname, 'mocks', 'emptyFunction.js');
 
 export default buildConfig({
   admin: {
     user: Users.slug,
     bundler: webpackBundler(),
+	  webpack: (config) => ({
+		  ...config,
+		  resolve:{
+			  ...config.resolve,
+			  extensions: ['.js','.jsx','.ts','.tsx'],
+			  alias: {
+				  ...config.resolve.alias,
+				  fs: mockModulePath,
+			  }
+		  }
+	  })
   },
   editor: slateEditor({}),
   collections: [Users,MediaBanners,Banners,Categories,MediaProducts,Products,MediaCategories,Carts],
