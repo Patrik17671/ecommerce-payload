@@ -91,6 +91,10 @@ const Carts: CollectionConfig = {
 			],
 		},
 		{
+			name: 'selectedSize',
+			type: 'text',
+		},
+		{
 			name: 'totalPrice',
 			type: 'number',
 			admin: {
