@@ -1,6 +1,12 @@
 import express from 'express'
+import dotenv from 'dotenv'
 import payload from 'payload'
 import { mediaManagement } from "payload-cloudinary-plugin";
+import path from "path";
+
+dotenv.config({
+	path: path.resolve(__dirname, '../.env'),
+})
 
 require('dotenv').config()
 const app = express()
