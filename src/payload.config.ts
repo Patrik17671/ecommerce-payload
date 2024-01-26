@@ -14,6 +14,9 @@ import Header from "./globals/Header";
 import MediaCategories from "./collections/MediaCategories";
 import Carts from "./collections/Carts";
 import dotenv from 'dotenv'
+import Delivery from "./collections/Delivery";
+import Payments from "./collections/Payments";
+import Orders from "./collections/Orders";
 
 dotenv.config({
 	path: path.resolve(__dirname, '../../.env'),
@@ -37,7 +40,7 @@ export default buildConfig({
 	  })
   },
   editor: slateEditor({}),
-  collections: [Users,MediaBanners,Banners,Categories,MediaProducts,Products,MediaCategories,Carts],
+  collections: [Users,MediaBanners,Banners,Categories,MediaProducts,Products,MediaCategories,Carts,Delivery,Payments,Orders],
 	globals: [Header],
   typescript: {
     outputFile: path.resolve(__dirname, 'payload-types.ts'),

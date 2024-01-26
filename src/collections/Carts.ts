@@ -1,7 +1,7 @@
 import {CollectionBeforeChangeHook, CollectionConfig} from 'payload/types';
 import payload from 'payload';
 
-const calculateTotalPrice = async (items) => {
+const calculateTotalPrice = async (items,deliveryId,paymentId) => {
 	let totalPrice = 0;
 	for (const item of items) {
 		const response = await payload.find({
@@ -23,10 +23,41 @@ const calculateTotalPrice = async (items) => {
 		}
 	}
 
+	if (deliveryId) {
+		const deliveryResponse = await payload.find({
+			collection: 'delivery',
+			where: {
+				id: {
+					equals: deliveryId,
+				},
+			},
+		});
+		if (deliveryResponse && deliveryResponse.docs.length > 0) {
+			totalPrice += deliveryResponse.docs[0].price as number;
+		}
+	}
+
+	if (paymentId) {
+		const paymentResponse = await payload.find({
+			collection: 'payments',
+			where: {
+				id: {
+					equals: paymentId,
+				},
+			},
+		});
+		if (paymentResponse && paymentResponse.docs.length > 0) {
+			totalPrice += paymentResponse.docs[0].price as number;
+		}
+	}
+
 	return totalPrice;
 };
 const updateOrCreateCartItem = (items, newItem) => {
-	const existingItemIndex = items.findIndex(item => item.productId === newItem.productId);
+	const existingItemIndex = items.findIndex(item =>
+		item.productId === newItem.productId &&
+		item.selectedSize === newItem.selectedSize
+	);
 
 	if (existingItemIndex > -1) {
 		items[existingItemIndex].quantity += newItem.quantity;
@@ -36,23 +67,50 @@ const updateOrCreateCartItem = (items, newItem) => {
 };
 
 const beforeChangeHook: CollectionBeforeChangeHook = async ({
-    data, operation, originalDoc
-  }) => {
+  data, operation, originalDoc, req
+}) => {
 
 	if (operation === 'create') {
-		data.totalPrice = await calculateTotalPrice(data.items);
+		data.totalPrice = await calculateTotalPrice(data.items, data.selectedDelivery, data.selectedPayment);
 	}
 
 	if (operation === 'update' && originalDoc) {
-		if (data.itemsToRemove) {
-			data.items = originalDoc.items.filter(item => !data.itemsToRemove.includes(item.productId));
-		} else {
-			for (const newItem of data.items) {
-				updateOrCreateCartItem(originalDoc.items, newItem);
+		Object.keys(req.body).forEach(key => {
+			data[key] = req.body[key];
+		});
+
+		if (req.body.items || req.body.itemsToRemove) {
+			let updatedItems = req.body.itemsToRemove ?
+				originalDoc.items.filter(item => !req.body.itemsToRemove.includes(item.productId)) :
+				[...originalDoc.items];
+
+			if (req.body.items) {
+				req.body.items.forEach(newItem => {
+					updateOrCreateCartItem(updatedItems, newItem);
+				});
 			}
-			data.items = originalDoc.items;
+
+			data.items = updatedItems;
 		}
-		data.totalPrice = await calculateTotalPrice(data.items);
+
+		data.totalPrice = await calculateTotalPrice(data.items, data.selectedDelivery, data.selectedPayment);
+
+		if (req.body.createOrder) {
+			const orderData = {
+				cartHash: data.cartHash,
+				items: data.items,
+				deliveryAddress: data.deliveryAddress,
+				selectedDelivery: data.selectedDelivery,
+				selectedPayment: data.selectedPayment,
+				totalPrice: data.totalPrice,
+			};
+
+			await payload.create({
+				collection: 'orders',
+				data: orderData,
+			});
+
+		}
 	}
 
 	return data;
@@ -63,7 +121,8 @@ const Carts: CollectionConfig = {
 	access: {
 		create: () => true,
 		read: () => true,
-		update: () => true
+		update: () => true,
+		delete: () => true
 	},
 	hooks: {
 		beforeChange: [beforeChangeHook]
@@ -88,11 +147,47 @@ const Carts: CollectionConfig = {
 					name: 'quantity',
 					type: 'number',
 				},
+				{
+					name: 'selectedSize',
+					type: 'text',
+				},
 			],
 		},
 		{
-			name: 'selectedSize',
-			type: 'text',
+			name: 'deliveryAddress',
+			type: 'group',
+			fields: [
+				{
+					name: 'name',
+					type: 'text',
+				},
+				{
+					name: 'lastName',
+					type: 'text',
+				},
+				{
+					name: 'email',
+					type: 'text',
+				},
+				{
+					name: 'phone',
+					type: 'text',
+				},
+				{
+					name: 'town',
+					type: 'text',
+				},
+			],
+		},
+		{
+			name: 'selectedDelivery',
+			type: 'relationship',
+			relationTo: 'delivery',
+		},
+		{
+			name: 'selectedPayment',
+			type: 'relationship',
+			relationTo: 'payments',
 		},
 		{
 			name: 'totalPrice',
