@@ -59,27 +59,15 @@ export const Products: CollectionConfig = {
 		},
 		{
 			name: 'sizes',
-			label: 'Sizes',
-			type: 'array',
-			fields: [
-				{
-					type: 'text',
-					name: 'size',
-					label: 'Size'
-				}
-			],
+			type: 'relationship',
+			relationTo: 'sizes',
+			hasMany: true,
 		},
 		{
 			name: 'colors',
-			label: 'Colors',
-			type: 'array',
-			fields: [
-				{
-					type: 'text',
-					name: 'color',
-					label: 'Color'
-				}
-			],
+			type: 'relationship',
+			relationTo: 'colors',
+			hasMany: true,
 		},
 	],
 };

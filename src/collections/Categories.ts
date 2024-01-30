@@ -17,6 +17,14 @@ const Categories: CollectionConfig = {
 		  name: 'url',
 		  type: 'text',
 	  },
+	  {
+		  name: 'value',
+		  type: 'text',
+	  },
+	  {
+		  name: 'description',
+		  type: 'richText',
+	  },
   ],
 }
 
