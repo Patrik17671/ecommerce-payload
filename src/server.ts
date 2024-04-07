@@ -23,12 +23,12 @@ app.use(mediaManagement());
 // Api token
 const apiTokenMiddleware = (req, res, next) => {
 	const origin = req.get('origin');
-
 	const WHITELIST_ORIGINS = process.env.WHITELIST_ORIGINS.split(',');
+	const authorizationHeader = req.headers.authorization || '';
+	const [bearer, token] = authorizationHeader.split(' ');
 
-	if (origin && !WHITELIST_ORIGINS.includes(origin)) {
-		const token = req.headers.authorization?.split(' ')[1];
-		if (token === process.env.PAYLOAD_API_TOKEN) {
+	if (!WHITELIST_ORIGINS.includes(origin)) {
+		if (bearer === 'Bearer' && token === process.env.PAYLOAD_API_TOKEN) {
 			next();
 		} else {
 			res.status(401).send('Unauthorized');
